@@ -1,3 +1,10 @@
+<!--
+Sube las ocho capturas a la misma carpeta del repositorio donde guardarás este informe, conservando sus nombres.
+Las etiquetas <img> incluidas debajo las mostrarán en GitHub.
+
+Si prefieres usar enlaces https://github.com/user-attachments/assets/..., arrastra cada captura al editor de GitHub y sustituye su etiqueta por la que GitHub genere. Esos enlaces se crean al subir las imágenes; no se pueden deducir de sus nombres.
+-->
+
 ## 1. Título
 
 Implementación y comunicación de contenedores MySQL y phpMyAdmin mediante una red personalizada en Docker.
@@ -8,23 +15,23 @@ Implementación y comunicación de contenedores MySQL y phpMyAdmin mediante una 
 
 ## 3. Fundamentos
 
-Docker permite ejecutar aplicaciones en contenedores, proporcionando entornos que incluyen las dependencias necesarias para su funcionamiento. Los contenedores se crean a partir de imágenes y pueden ejecutar servicios independientes, como una base de datos o una aplicación web.
+Docker permite ejecutar aplicaciones en contenedores que incluyen las dependencias necesarias para su funcionamiento. Los contenedores se crean a partir de imágenes y permiten ejecutar servicios independientes dentro de un mismo equipo.
 
-MySQL es un sistema gestor de bases de datos relacionales que permite almacenar, organizar y consultar información mediante SQL. Por su parte, phpMyAdmin es una herramienta web que facilita la administración de bases de datos MySQL mediante una interfaz gráfica.
+MySQL es un sistema gestor de bases de datos relacionales que permite almacenar, organizar y consultar información mediante instrucciones SQL. phpMyAdmin es una herramienta web que facilita la administración de MySQL mediante una interfaz gráfica.
 
-Para que ambos servicios trabajen conjuntamente, necesitan comunicarse a través de una red. Las redes personalizadas de tipo `bridge` permiten conectar contenedores ejecutados en un mismo motor de Docker y ofrecen resolución de nombres. Esto permite que phpMyAdmin encuentre el servidor MySQL utilizando el nombre del contenedor, sin configurar manualmente su dirección IP.
+Para establecer la comunicación entre ambos servicios se puede utilizar una red personalizada de Docker. Las redes de tipo `bridge` permiten conectar contenedores ejecutados en un mismo motor de Docker y ofrecen resolución de nombres. Así, phpMyAdmin puede encontrar el servidor MySQL mediante el nombre de su contenedor.
 
-Las variables de entorno permiten establecer parámetros de configuración durante la creación de los contenedores. En esta práctica se utilizaron para definir la contraseña de MySQL y configurar el servidor y el puerto al que se conectaría phpMyAdmin.
+Las variables de entorno permiten configurar aspectos como las credenciales de acceso, el servidor de destino y el puerto de conexión. La publicación de puertos permite acceder desde el equipo anfitrión a los servicios de un contenedor.
 
-La publicación de puertos permite acceder a un servicio del contenedor desde el equipo anfitrión. Se utilizó el puerto local `8080` para acceder al puerto `80` del contenedor de phpMyAdmin. MySQL utilizó su puerto interno `3306` para la comunicación entre los contenedores.
+En esta práctica se publicó phpMyAdmin en el puerto local `8080`, mientras que la conexión interna con MySQL se realizó mediante el puerto `3306`.
 
-Finalmente, el comando `docker network inspect` permite consultar los detalles de una red y los contenedores conectados. Sin embargo, pertenecer a la misma red no garantiza por sí solo el funcionamiento del servicio; también es necesario comprobar la autenticación y ejecutar operaciones sobre la base de datos.
+El comando `docker network inspect` permite consultar los detalles de una red y sus contenedores conectados. La creación y consulta de datos desde phpMyAdmin permite comprobar, adicionalmente, que la comunicación con MySQL funciona correctamente.
 
 ## 4. Conocimientos previos
 
 - Conceptos básicos de imágenes y contenedores Docker.
-- Uso de comandos en PowerShell.
 - Manejo básico de Docker Desktop.
+- Ejecución de comandos en PowerShell.
 - Conceptos de redes, direcciones IP y puertos.
 - Configuración mediante variables de entorno.
 - Conceptos básicos de bases de datos relacionales.
@@ -34,14 +41,14 @@ Finalmente, el comando `docker network inspect` permite consultar los detalles d
 
 **Objetivo general**
 
-Implementar dos contenedores, uno para MySQL y otro para phpMyAdmin, y establecer su comunicación mediante una red personalizada en Docker.
+Implementar dos contenedores, uno para MySQL y otro para phpMyAdmin, y comprobar su comunicación mediante una red personalizada en Docker.
 
 **Objetivos específicos**
 
-- Crear un contenedor MySQL y configurar sus credenciales de acceso.
+- Crear un contenedor MySQL y configurar sus credenciales.
 - Crear un contenedor phpMyAdmin y establecer sus parámetros de conexión.
 - Crear una red personalizada y conectar ambos contenedores.
-- Verificar la conexión de los contenedores a la red.
+- Verificar la pertenencia de los contenedores a la red.
 - Crear una base de datos de prueba desde phpMyAdmin.
 - Comprobar la comunicación mediante la creación de una tabla, la inserción de registros y su consulta.
 
@@ -49,23 +56,21 @@ Implementar dos contenedores, uno para MySQL y otro para phpMyAdmin, y establece
 
 - Computadora con sistema operativo Windows.
 - Docker Desktop instalado y en ejecución.
-- Entorno de Docker configurado para ejecutar contenedores Linux.
+- Docker configurado para ejecutar contenedores Linux.
 - Terminal PowerShell.
 - Navegador web.
 - Conexión a Internet para descargar las imágenes.
-- Memoria y almacenamiento suficientes para ejecutar ambos contenedores.
+- Memoria y almacenamiento suficientes para ejecutar ambos servicios.
 
 ## 7. Material de apoyo
 
 - Enunciado de la práctica.
 - Documentación oficial de Docker.
 - Documentación de las imágenes oficiales de MySQL y phpMyAdmin.
-- Documentación sobre redes personalizadas en Docker.
-- Capturas de pantalla del procedimiento realizado.
+- Documentación sobre redes personalizadas.
+- Capturas de pantalla del procedimiento.
 
 ## 8. Procedimiento
-
-<!-- Para visualizar las imágenes en GitHub, subir las ocho capturas a la misma carpeta que este archivo Markdown, conservando sus nombres originales. -->
 
 **Paso 1: Verificación del funcionamiento de Docker.**
 
@@ -81,62 +86,49 @@ También se consultaron los contenedores existentes:
 docker ps -a
 ```
 
-Este último comando permite visualizar tanto los contenedores en ejecución como los detenidos.
+Este comando permite visualizar los contenedores en ejecución y los detenidos.
 
 **Paso 2: Creación del contenedor MySQL.**
 
-Se ejecutó el siguiente comando para crear el contenedor `mysql_practica`:
+Se ejecutó el siguiente comando:
 
 ```powershell
 docker run -d --name mysql_practica -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_ROOT_HOST=% mysql:8.4
 ```
 
-Los parámetros utilizados fueron:
+La opción `-d` ejecutó el contenedor en segundo plano y `--name` le asignó el nombre `mysql_practica`.
 
-| Parámetro | Función |
-|---|---|
-| `-d` | Ejecuta el contenedor en segundo plano. |
-| `--name mysql_practica` | Asigna un nombre al contenedor. |
-| `MYSQL_ROOT_PASSWORD=admin` | Establece la contraseña del usuario `root`. |
-| `MYSQL_ROOT_HOST=%` | Permite la conexión de `root` desde otro contenedor. |
-| `mysql:8.4` | Indica la imagen y versión utilizada. |
+La variable `MYSQL_ROOT_PASSWORD` estableció la contraseña del usuario `root`. Para esta práctica local, `MYSQL_ROOT_HOST=%` permitió utilizar esa cuenta desde otro contenedor.
 
-La contraseña `admin` corresponde únicamente al entorno local de esta práctica.
+La contraseña `admin` se utilizó únicamente en el entorno de aprendizaje.
 
-Como la imagen no estaba disponible localmente, Docker inició su descarga.
+Como la imagen no estaba disponible localmente, Docker inició su descarga:
 
-![Descarga de la imagen MySQL](<Captura de pantalla 2026-10-31 142941.png>)
+<img width="1000" alt="Creación del contenedor mysql_practica y descarga de MySQL 8.4" src="Captura de pantalla 2026-10-31 142941.png" />
 
 *Figura 1. Comando de creación del contenedor MySQL y descarga de la imagen.*
 
-Se consultaron los registros para comprobar la inicialización:
+Se consultaron los registros de inicialización:
 
 ```powershell
 docker logs mysql_practica
 ```
 
-Se esperó a que MySQL estuviera listo para aceptar conexiones. Aunque la figura muestra la descarga en curso, el acceso posterior desde phpMyAdmin permitió comprobar que el servicio terminó funcionando.
+Se esperó a que MySQL estuviera listo para aceptar conexiones. La captura muestra la descarga en curso; el acceso posterior desde phpMyAdmin confirmó que el servicio terminó funcionando.
 
 **Paso 3: Creación del contenedor phpMyAdmin.**
 
-Se creó el contenedor `phpmyadmin_practica`:
+Se creó el contenedor de administración web:
 
 ```powershell
 docker run -d --name phpmyadmin_practica -e PMA_HOST=mysql_practica -e PMA_PORT=3306 -p 127.0.0.1:8080:80 phpmyadmin
 ```
 
-Los parámetros de conexión fueron:
+La variable `PMA_HOST` indicó el nombre del contenedor MySQL y `PMA_PORT` estableció el puerto interno `3306`.
 
-| Parámetro | Función |
-|---|---|
-| `PMA_HOST=mysql_practica` | Define el nombre del contenedor que ejecuta MySQL. |
-| `PMA_PORT=3306` | Establece el puerto interno de MySQL. |
-| `-p 127.0.0.1:8080:80` | Publica el servicio web en el puerto `8080` del equipo local. |
-| `phpmyadmin` | Indica la imagen oficial utilizada. |
+La opción `-p 127.0.0.1:8080:80` permitió acceder al puerto `80` del contenedor mediante el puerto `8080` del equipo local.
 
-Las credenciales de MySQL se introdujeron posteriormente en la pantalla de inicio de sesión de phpMyAdmin.
-
-![Creación del contenedor phpMyAdmin](<Captura de pantalla 2026-10-31 143320.png>)
+<img width="1000" alt="Descarga de la imagen y creación del contenedor phpmyadmin_practica" src="Captura de pantalla 2026-10-31 143320.png" />
 
 *Figura 2. Descarga de la imagen y creación del contenedor phpMyAdmin.*
 
@@ -154,31 +146,31 @@ Posteriormente, se verificó su existencia:
 docker network ls
 ```
 
-El resultado mostró la red con el controlador `bridge` y alcance `local`.
+El resultado mostró `red_practica` con el controlador `bridge` y alcance `local`.
 
-![Listado de redes Docker](<Captura de pantalla 2026-10-31 143437.png>)
+<img width="1000" alt="Listado de redes Docker con red_practica" src="Captura de pantalla 2026-10-31 143437.png" />
 
-*Figura 3. Verificación de la existencia de `red_practica`.*
+*Figura 3. Verificación de la existencia de la red personalizada.*
 
-**Paso 5: Conexión de ambos contenedores a la red.**
+**Paso 5: Conexión de los contenedores a la red.**
 
-Se conectó el contenedor MySQL:
+Se conectó MySQL a la red:
 
 ```powershell
 docker network connect red_practica mysql_practica
 ```
 
-Luego se conectó el contenedor phpMyAdmin:
+Luego se conectó phpMyAdmin:
 
 ```powershell
 docker network connect red_practica phpmyadmin_practica
 ```
 
-Estos comandos permitieron incorporar los contenedores a la red sin eliminarlos ni crearlos nuevamente.
+Estos comandos permitieron incorporar ambos contenedores a la red sin eliminarlos ni crearlos nuevamente.
 
-**Paso 6: Verificación de los contenedores conectados.**
+**Paso 6: Verificación de la conexión a la red.**
 
-Se inspeccionó la configuración de la red:
+Se inspeccionó la configuración:
 
 ```powershell
 docker network inspect red_practica
@@ -186,23 +178,15 @@ docker network inspect red_practica
 
 En la sección `Containers` aparecieron `mysql_practica` y `phpmyadmin_practica`.
 
-También se identificaron los siguientes datos:
+La salida también mostró la subred `172.20.0.0/16`, la puerta de enlace `172.20.0.1` y la dirección `172.20.0.2/16` del contenedor MySQL.
 
-| Elemento | Valor observado |
-|---|---|
-| Nombre de la red | `red_practica` |
-| Controlador | `bridge` |
-| Subred | `172.20.0.0/16` |
-| Puerta de enlace | `172.20.0.1` |
-| Dirección de MySQL | `172.20.0.2/16` |
+La dirección IPv4 de phpMyAdmin queda fuera del recorte de la captura, pero su nombre aparece entre los contenedores conectados.
 
-La dirección IPv4 de phpMyAdmin queda fuera del recorte de la captura, pero su nombre sí aparece entre los contenedores conectados.
+<img width="1000" alt="Conexión de los contenedores e inspección de red_practica" src="Captura de pantalla 2026-10-31 143616.png" />
 
-![Conexión e inspección de la red](<Captura de pantalla 2026-10-31 143616.png>)
+*Figura 4. Comandos de conexión e inspección de la red, mostrando ambos contenedores.*
 
-*Figura 4. Comandos de conexión e inspección de la red personalizada.*
-
-Para consultar los contenedores en ejecución se utilizó:
+También se utilizó el siguiente comando para consultar los contenedores en ejecución:
 
 ```powershell
 docker ps
@@ -216,40 +200,35 @@ Desde el navegador del equipo donde se ejecutaba Docker se ingresó a:
 http://localhost:8080
 ```
 
-Se inició sesión con las credenciales configuradas:
+Se inició sesión con el usuario `root` y la contraseña `admin`, establecidos durante la configuración de MySQL.
 
-| Campo | Valor |
-|---|---|
-| Usuario | `root` |
-| Contraseña de la práctica | `admin` |
-
-El servidor MySQL ya estaba definido mediante la variable `PMA_HOST`, por lo que phpMyAdmin dirigió la conexión a `mysql_practica:3306`.
+El servidor de destino ya estaba definido mediante `PMA_HOST`, por lo que phpMyAdmin dirigió la conexión a `mysql_practica:3306`.
 
 **Paso 8: Creación de la base de datos de prueba.**
 
-Dentro de phpMyAdmin se seleccionó la opción **Nueva** o **Bases de datos**. Se ingresó el nombre `base_prueba`, se seleccionó el cotejamiento `utf8mb4_unicode_ci` y se pulsó **Crear**.
+Dentro de phpMyAdmin se seleccionó **Nueva** o **Bases de datos**. Se ingresó el nombre `base_prueba`, se seleccionó el cotejamiento `utf8mb4_unicode_ci` y se pulsó **Crear**.
 
 La base apareció en el panel izquierdo de la interfaz.
 
-![Base de datos creada](<Captura de pantalla 2026-10-31 144137.png>)
+<img width="761" alt="Base de datos base_prueba creada y seleccionada en phpMyAdmin" src="Captura de pantalla 2026-10-31 144137.png" />
 
-*Figura 5. Base de datos `base_prueba` seleccionada en phpMyAdmin.*
+*Figura 5. Base de datos creada, antes de incorporar tablas.*
 
-Para comprobar su existencia se ejecutó:
+Se comprobó su existencia mediante:
 
 ```sql
 SHOW DATABASES;
 ```
 
-![Consulta de las bases de datos](<Captura de pantalla 2026-10-31 144023.png>)
+<img width="487" alt="Resultado de SHOW DATABASES con base_prueba" src="Captura de pantalla 2026-10-31 144023.png" />
 
-*Figura 6. Resultado de `SHOW DATABASES`, incluyendo `base_prueba`.*
+*Figura 6. Consulta de las bases de datos disponibles.*
 
-La creación de la base desde phpMyAdmin permitió comprobar que la autenticación y la comunicación con MySQL funcionaban correctamente.
+Esta operación confirmó que phpMyAdmin podía autenticarse y ejecutar instrucciones sobre MySQL.
 
 **Paso 9: Creación de la tabla de prueba.**
 
-Se seleccionó `base_prueba`, se abrió la pestaña **SQL** y se preparó la siguiente instrucción:
+Se seleccionó `base_prueba`, se abrió la pestaña **SQL** y se ejecutó:
 
 ```sql
 USE base_prueba;
@@ -262,20 +241,13 @@ CREATE TABLE estudiantes (
 );
 ```
 
-La tabla se definió con los siguientes campos:
+El campo `id` se configuró como clave primaria autoincremental. Los campos `nombre` y `correo` almacenaron los datos de cada estudiante, mientras que `fecha_registro` permitió guardar automáticamente la fecha y hora de inserción.
 
-| Campo | Descripción |
-|---|---|
-| `id` | Identificador autoincremental y clave primaria. |
-| `nombre` | Nombre del estudiante. |
-| `correo` | Correo electrónico del estudiante. |
-| `fecha_registro` | Fecha y hora de inserción del registro. |
+La siguiente captura presenta conjuntamente las instrucciones de creación, inserción y consulta:
 
-La captura presenta conjuntamente las instrucciones de creación, inserción y consulta utilizadas en los pasos 9 y 10.
+<img width="512" alt="Código SQL para crear estudiantes, insertar registros y consultarlos" src="Captura de pantalla 2026-10-31 144630.png" />
 
-![Instrucciones SQL de prueba](<Captura de pantalla 2026-10-31 144630.png>)
-
-*Figura 7. Instrucciones SQL para crear la tabla, insertar registros y consultar los datos.*
+*Figura 7. Instrucciones SQL utilizadas para comprobar el funcionamiento de la base de datos.*
 
 **Paso 10: Inserción y consulta de registros.**
 
@@ -288,28 +260,31 @@ VALUES
     ('Ana', 'ana@example.com');
 ```
 
-Posteriormente, se consultó el contenido de la tabla:
+Posteriormente, se consultaron los datos:
 
 ```sql
 SELECT * FROM estudiantes;
 ```
 
-Los resultados mostraron los registros de Gabriel y Ana, junto con sus identificadores, correos y fechas de registro.
+El resultado mostró los registros de Gabriel y Ana, con sus identificadores, correos y fechas de registro.
 
-![Registros de la tabla estudiantes](<Captura de pantalla 2026-10-31 144642.png>)
+<img width="945" alt="Registros de Gabriel y Ana almacenados en la tabla estudiantes" src="Captura de pantalla 2026-10-31 144642.png" />
 
-*Figura 8. Visualización de los registros almacenados en `estudiantes`.*
+*Figura 8. Resultado de la consulta de los registros almacenados.*
 
-Esta operación comprobó que phpMyAdmin podía escribir y consultar información en MySQL mediante la red personalizada.
+La inserción y consulta comprobaron que phpMyAdmin podía escribir y leer información en MySQL mediante la red personalizada.
 
 **Paso 11: Comprobación final de la comunicación.**
 
-Se relacionaron dos evidencias:
+Se relacionaron las siguientes evidencias:
 
-- La presencia de ambos contenedores en la sección `Containers` de `red_practica`.
-- La creación de la base de datos, la tabla y los registros desde phpMyAdmin.
+- Ambos contenedores aparecieron en la sección `Containers` de `red_practica`.
+- Se accedió correctamente a phpMyAdmin.
+- Se creó la base de datos `base_prueba`.
+- Se creó la tabla `estudiantes`.
+- Se insertaron y consultaron los registros de prueba.
 
-La inspección confirmó la pertenencia de los contenedores a la red. Las operaciones SQL comprobaron la comunicación funcional entre los servicios y la validez de las credenciales.
+La inspección confirmó la pertenencia a la red. Las operaciones realizadas desde phpMyAdmin comprobaron la comunicación funcional con MySQL y la validez de las credenciales.
 
 ## 9. Resultados esperados
 
@@ -320,10 +295,12 @@ La inspección confirmó la pertenencia de los contenedores a la red. Las operac
 - Conexión de phpMyAdmin con MySQL mediante el nombre `mysql_practica`.
 - Autenticación satisfactoria con las credenciales configuradas.
 - Base de datos `base_prueba` creada.
-- Tabla `estudiantes` creada con los campos definidos.
-- Registros de Gabriel y Ana insertados y consultados correctamente.
+- Tabla `estudiantes` creada.
+- Registros insertados y consultados correctamente.
 
-Las evidencias obtenidas muestran el cumplimiento del objetivo principal: establecer la comunicación entre MySQL y phpMyAdmin mediante una red personalizada en Docker. La creación y consulta de datos permitió verificar el funcionamiento conjunto de ambos servicios.
+Las evidencias obtenidas muestran el cumplimiento del objetivo principal: establecer la comunicación entre MySQL y phpMyAdmin mediante una red personalizada en Docker.
+
+La creación de la base de datos, la tabla y los registros permitió comprobar el funcionamiento conjunto de ambos servicios.
 
 ## 10. Bibliografía
 
